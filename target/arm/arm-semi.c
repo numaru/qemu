@@ -565,7 +565,9 @@ target_ulong do_arm_semihosting(CPUARMState *env)
     case TARGET_SYS_HEAPINFO:
         {
             target_ulong retvals[4];
+#ifdef CONFIG_USER_ONLY
             target_ulong limit;
+#endif
             int i;
 
             GET_ARG(0);
@@ -594,11 +596,12 @@ target_ulong do_arm_semihosting(CPUARMState *env)
             retvals[2] = ts->stack_base;
             retvals[3] = 0; /* Stack limit.  */
 #else
-            limit = ram_size;
-            /* TODO: Make this use the limit of the loaded application.  */
-            retvals[0] = limit / 2;
-            retvals[1] = limit;
-            retvals[2] = limit; /* Stack base */
+            /* The libc should fill the struct if set to 0 by qemu
+             * TODO: Make this use the limit of the loaded application.
+             */
+            retvals[0] = 0; /* Heap base */
+            retvals[1] = 0; /* Heap limit */
+            retvals[2] = 0; /* Stack base */
             retvals[3] = 0; /* Stack limit.  */
 #endif
 
